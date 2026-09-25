@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU Tycoon - Build Your Computing Empire</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #000000 0%, #1a1a2e 100%);
+            color: #00ff00;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .landing-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #00ff00;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px #00ff00;
+            color: #00ff88;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            color: #00ff00;
+        }
+        
+        .description {
+            margin: 30px 0;
+            line-height: 1.8;
+            color: #00dd00;
+        }
+        
+        .description h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #00ff88;
+        }
+        
+        .description ul {
+            list-style: none;
+            margin-left: 20px;
+        }
+        
+        .description li {
+            margin: 8px 0;
+        }
+        
+        .description li:before {
+            content: '> ';
+            color: #00ff00;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .button-container {
+            margin-top: 40px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: 2px solid #00ff00;
+            background: linear-gradient(135deg, #00ff00 0%, #00dd00 100%);
+            color: #000000;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .btn:hover {
+            box-shadow: 0 0 20px #00ff00;
+            transform: scale(1.05);
+        }
+        
+        .btn.secondary {
+            background: transparent;
+            color: #00ff00;
+        }
+        
+        .btn.secondary:hover {
+            background: rgba(0, 255, 0, 0.2);
+        }
+        
+        .footer {
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #00aa00;
+            border-top: 1px solid #00ff00;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+        <h1>CPU TYCOON</h1>
+        <div class="subtitle">Build Your Computing Empire (1980-2026)</div>
+        
+        <div class="description">
+            <p>Welcome to the ultimate CPU business simulation game!</p>
+            
+            <h3>Your Mission:</h3>
+            <ul>
+                <li>Start with $1 million in 1980</li>
+                <li>Develop revolutionary CPU architectures</li>
+                <li>Conduct cutting-edge research</li>
+                <li>Build and expand your manufacturing facilities</li>
+                <li>Compete in the global market</li>
+                <li>Dominate the industry by 2026</li>
+            </ul>
+            
+            <h3>Key Features:</h3>
+            <ul>
+                <li>Real CPU history from 1980 to 2026</li>
+                <li>Research technology tree with 11+ technologies</li>
+                <li>Iconic CPU designs to manufacture and sell</li>
+                <li>Dynamic market simulation with real demand</li>
+                <li>Financial management and resource allocation</li>
+                <li>Progress tracking and achievements</li>
+            </ul>
+        </div>
+        
+        <div class="button-container">
+            <a href="index.html" class="btn">START NEW GAME</a>
+            <button class="btn secondary" onclick="loadGame()">LOAD GAME</button>
+        </div>
+        
+        <div class="footer">
+            <p>© 2026 CPU Tycoon | A game about building computing history</p>
+        </div>
+    </div>
+    
+    <script>
+        function loadGame() {
+            if (localStorage.getItem('cpuTycoonSave')) {
+                window.location.href = 'index.html';
+            } else {
+                alert('No saved game found. Start a new game!');
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>
