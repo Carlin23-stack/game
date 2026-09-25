@@ -23,6 +23,7 @@
             <nav class="game-nav">
                 <button class="nav-btn active" data-tab="overview">Overview</button>
                 <button class="nav-btn" data-tab="research">Research</button>
+                <button class="nav-btn" data-tab="design">Design CPU</button>
                 <button class="nav-btn" data-tab="manufacturing">Manufacturing</button>
                 <button class="nav-btn" data-tab="market">Market</button>
                 <button class="nav-btn" data-tab="cpus">My CPUs</button>
@@ -49,6 +50,12 @@
                 <div id="research-tab" class="tab">
                     <h2>Research & Development</h2>
                     <div class="research-grid" id="research-grid"></div>
+                </div>
+
+                <!-- Design CPU Tab -->
+                <div id="design-tab" class="tab">
+                    <h2>CPU Design Studio</h2>
+                    <div id="design-container"></div>
                 </div>
 
                 <!-- Manufacturing Tab -->
@@ -102,6 +109,7 @@
 
     <script src="js/game-state.js"></script>
     <script src="js/game-engine.js"></script>
+    <script src="js/cpu-designer.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/main.js"></script>
 </body>
