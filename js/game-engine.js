@@ -1,64 +1,72 @@
-// Game Engine - Core Game Logic
+// Game Engine - Core Game Logic - IMPROVED
 class GameEngine {
     constructor(gameState) {
         this.state = gameState;
-        this.gameSpeed = 1; // 1x, 2x, 5x, 10x
+        this.gameSpeed = 1;
         this.isPaused = false;
+        this.autoAdvanceInterval = null;
     }
     
     // Advance to next year
     advanceYear() {
-        if (this.isPaused) return;
+        if (this.isPaused) return false;
         
         this.state.year++;
         
         // Check if game is over (2026)
         if (this.state.year > 2026) {
             this.endGame();
-            return;
+            return false;
         }
         
-        // Process yearly events
+        // Process yearly events IN ORDER
         this.processYearlyEvents();
         this.processProduction();
         this.processMarket();
         this.processResearch();
         this.processCosts();
         this.checkMilestones();
+        this.checkResearchUnlocks();
         
         this.state.save();
+        return true;
+    }
+    
+    // Check if new technologies unlock new CPUs
+    checkResearchUnlocks() {
+        // This is handled by the UI filtering available CPUs by year
     }
     
     // Process CPU production
     processProduction() {
         if (this.state.productionQueue.length === 0) return;
         
-        const produced = this.state.productionQueue.filter(item => {
-            if (item.remainingYears > 0) {
-                item.remainingYears--;
-                return false;
+        const stillProducing = [];
+        const completed = [];
+        
+        this.state.productionQueue.forEach(item => {
+            item.remainingYears--;
+            if (item.remainingYears <= 0) {
+                completed.push(item);
+            } else {
+                stillProducing.push(item);
             }
-            return true;
         });
         
-        produced.forEach(item => {
-            // Add to inventory
+        // Process completed items
+        completed.forEach(item => {
             if (!this.state.cpuInventory[item.cpuId]) {
                 this.state.cpuInventory[item.cpuId] = 0;
             }
             this.state.cpuInventory[item.cpuId] += item.quantity;
-            
-            this.state.addEvent(`Produced ${item.quantity} units of ${item.cpuName}`);
+            this.state.addEvent(`✓ Produced ${item.quantity.toLocaleString()} units of ${item.cpuName}`);
         });
         
-        // Remove completed items
-        this.state.productionQueue = this.state.productionQueue.filter(item => item.remainingYears > 0);
+        this.state.productionQueue = stillProducing;
     }
     
     // Process market demand and sales
     processMarket() {
-        // Simulate market sales based on demand
-        const soldCPUs = {};
         let totalRevenue = 0;
         
         Object.keys(this.state.cpuInventory).forEach(cpuId => {
@@ -66,6 +74,8 @@ class GameEngine {
             if (!cpu) return;
             
             const inventory = this.state.cpuInventory[cpuId];
+            if (inventory <= 0) return;
+            
             const marketPrice = this.calculateMarketPrice(cpu);
             const demand = cpu.marketDemand || 10000;
             
@@ -75,73 +85,70 @@ class GameEngine {
             
             if (sold > 0) {
                 totalRevenue += revenue;
-                soldCPUs[cpuId] = sold;
                 this.state.cpuInventory[cpuId] -= sold;
             }
         });
         
         this.state.money += totalRevenue;
         if (totalRevenue > 0) {
-            this.state.addEvent(`Sold CPUs for $${totalRevenue.toLocaleString()}`);
+            this.state.addEvent(`💰 Sold CPUs for $${totalRevenue.toLocaleString()}`);
         }
     }
     
     // Calculate CPU market price based on year and specs
     calculateMarketPrice(cpu) {
         let price = cpu.marketPrice;
-        
-        // Price degrades over time
         const yearsDiff = this.state.year - cpu.year;
         const degradation = Math.pow(0.85, yearsDiff);
-        
-        return Math.floor(price * degradation);
+        return Math.max(Math.floor(price * degradation), 10); // Minimum $10
     }
     
     // Process research progress
     processResearch() {
-        // Gain research points based on facilities
         const rpPerYear = 50 * this.state.researchFacilities;
         this.state.researchPoints += rpPerYear;
     }
     
     // Process maintenance and operational costs
     processCosts() {
-        const yearlyMaintenance = this.state.manufacturingCapacity * 0.1; // 10% of capacity
+        const yearlyMaintenance = this.state.manufacturingCapacity * 0.1;
         this.state.money -= yearlyMaintenance;
         
         if (this.state.money < 0) {
-            this.state.addEvent('WARNING: Negative cash flow!');
+            this.state.addEvent('⚠️ WARNING: Negative cash flow!');
         }
     }
     
-    // Check for important milestones and events
+    // Check for important milestones
     checkMilestones() {
         const milestones = [
-            { year: 1985, text: '32-bit computing era begins', techRequirement: '32-bit' },
-            { year: 2000, text: 'Y2K milestone reached', techRequirement: '64-bit' },
-            { year: 2005, text: 'Multi-core processors become standard', techRequirement: 'Multi-core' },
-            { year: 2020, text: 'AI acceleration becomes crucial', techRequirement: 'AI Acceleration' }
+            { year: 1985, text: '32-bit computing era begins' },
+            { year: 2000, text: 'Y2K milestone reached' },
+            { year: 2005, text: 'Multi-core processors become standard' },
+            { year: 2010, text: 'Smartphone era begins' },
+            { year: 2020, text: 'AI acceleration becomes crucial' },
+            { year: 2026, text: 'Modern computing era' }
         ];
         
         milestones.forEach(m => {
             if (m.year === this.state.year) {
-                this.state.addEvent(`[MILESTONE] ${m.text}`);
+                this.state.addEvent(`🏆 [MILESTONE] ${m.text}`);
             }
         });
     }
     
-    // Process yearly events (market changes, competition, etc)
+    // Process yearly events
     processYearlyEvents() {
-        // Random events
         const rand = Math.random();
         
-        if (rand < 0.1) {
+        if (rand < 0.15) {
             const eventTexts = [
-                'Market boom! Demand increased by 50%',
-                'New competitor enters market',
-                'Supply chain disruption - manufacturing slowed',
-                'Consumer demand shifts toward higher performance',
-                'Economic recession affects market demand'
+                '📈 Market boom! Demand increased by 50%',
+                '🏭 New competitor enters market',
+                '⚠️ Supply chain disruption - production slowed',
+                '📊 Consumer demand shifts toward higher performance',
+                '📉 Economic recession affects market demand',
+                '🎯 Breakthrough in manufacturing efficiency!'
             ];
             const event = eventTexts[Math.floor(Math.random() * eventTexts.length)];
             this.state.addEvent(event);
@@ -163,32 +170,8 @@ class GameEngine {
         tech.researched = true;
         this.state.reputation += Math.floor(tech.repPoints * 0.5);
         
-        this.state.addEvent(`Researched: ${techName}`);
+        this.state.addEvent(`🔬 Researched: ${techName}`);
         return { success: true, message: `${techName} researched successfully!` };
-    }
-    
-    // Design a new CPU
-    designCPU(specs) {
-        // specs: { name, bits, cores, ghz, technologyRequired }
-        const cost = 100000 + (specs.bits * 1000) + (specs.cores * 50000);
-        
-        if (this.state.money < cost) {
-            return { success: false, message: 'Insufficient funds' };
-        }
-        
-        // Check if technologies are researched
-        if (specs.techRequired) {
-            for (let tech of specs.techRequired) {
-                if (!this.state.technologies[tech]?.researched) {
-                    return { success: false, message: `Must research ${tech} first` };
-                }
-            }
-        }
-        
-        this.state.money -= cost;
-        this.state.addEvent(`Designed new CPU: ${specs.name}`);
-        
-        return { success: true, message: 'CPU design created!' };
     }
     
     // Start production of a CPU
@@ -198,12 +181,12 @@ class GameEngine {
         
         const productionCost = cpu.cost * quantity;
         if (this.state.money < productionCost) {
-            return { success: false, message: 'Insufficient funds' };
+            return { success: false, message: `Insufficient funds. Need $${productionCost.toLocaleString()}, have $${this.state.money.toLocaleString()}` };
         }
         
         this.state.money -= productionCost;
         
-        const productionYears = Math.ceil(quantity / (this.state.manufacturingCapacity / 10));
+        const productionYears = Math.max(1, Math.ceil(quantity / (this.state.manufacturingCapacity / 5)));
         this.state.productionQueue.push({
             cpuId: cpuId,
             cpuName: cpu.name,
@@ -211,22 +194,23 @@ class GameEngine {
             remainingYears: productionYears
         });
         
-        this.state.addEvent(`Started production of ${quantity} ${cpu.name} units`);
-        return { success: true, message: 'Production started!' };
+        this.state.addEvent(`🏭 Started production of ${quantity.toLocaleString()} ${cpu.name} units (${productionYears} years)`);
+        return { success: true, message: `Production started! Will complete in ${productionYears} year(s)` };
     }
     
     endGame() {
         this.isPaused = true;
         const score = this.calculateFinalScore();
-        this.state.addEvent(`[GAME OVER] Final Score: ${score}`);
+        this.state.addEvent(`🎮 [GAME OVER - Year 2026] Final Score: ${score}`);
     }
     
     calculateFinalScore() {
-        const moneyScore = Math.floor(this.state.money / 1000000);
+        const moneyScore = Math.floor(this.state.money / 1000000) * 100;
         const reputationScore = this.state.reputation * 10;
         const techScore = Object.values(this.state.technologies).filter(t => t.researched).length * 100;
+        const inventoryScore = Object.values(this.state.cpuInventory).reduce((a, b) => a + b, 0);
         
-        return moneyScore + reputationScore + techScore;
+        return moneyScore + reputationScore + techScore + inventoryScore;
     }
     
     setGameSpeed(speed) {

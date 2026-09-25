@@ -1,8 +1,8 @@
-// Game State Management
+// Game State Management - FIXED VERSION
 const GameState = {
     // Current year and time
     year: 1980,
-    season: 'Q1', // Q1, Q2, Q3, Q4
+    season: 'Q1',
     
     // Player Resources
     money: 1000000,
@@ -11,7 +11,7 @@ const GameState = {
     
     // Company Info
     companyName: 'Your CPU Company',
-    manufacturingCapacity: 10000, // units per year
+    manufacturingCapacity: 10000,
     researchFacilities: 1,
     
     // Inventory
@@ -22,7 +22,7 @@ const GameState = {
         cores: 0
     },
     
-    // Technology Tree - what's been researched
+    // Technology Tree
     technologies: {
         '8-bit': { researched: true, year: 1980 },
         '16-bit': { researched: false, year: 1982, cost: 50000, repPoints: 50 },
@@ -37,7 +37,7 @@ const GameState = {
         'AI Acceleration': { researched: false, year: 2020, cost: 400000, repPoints: 250 },
     },
     
-    // CPU Designs
+    // CPU Designs - Core list (won't be duplicated)
     cpuDesigns: [
         {
             id: 'i8086',
@@ -74,6 +74,90 @@ const GameState = {
             year: 1987,
             techRequired: ['32-bit'],
             marketDemand: 500000
+        },
+        {
+            id: 'i486',
+            name: 'Intel 486',
+            bits: 32,
+            cores: 1,
+            ghz: 0.04,
+            cost: 200,
+            marketPrice: 1200,
+            year: 1989,
+            techRequired: ['32-bit'],
+            marketDemand: 1000000
+        },
+        {
+            id: 'pentium',
+            name: 'Pentium',
+            bits: 32,
+            cores: 1,
+            ghz: 0.06,
+            cost: 250,
+            marketPrice: 1500,
+            year: 1993,
+            techRequired: ['32-bit'],
+            marketDemand: 2000000
+        },
+        {
+            id: 'pentium2',
+            name: 'Pentium II',
+            bits: 32,
+            cores: 1,
+            ghz: 0.3,
+            cost: 300,
+            marketPrice: 2000,
+            year: 1997,
+            techRequired: ['32-bit'],
+            marketDemand: 3000000
+        },
+        {
+            id: 'pentium4',
+            name: 'Pentium 4',
+            bits: 32,
+            cores: 1,
+            ghz: 1.5,
+            cost: 400,
+            marketPrice: 2500,
+            year: 2000,
+            techRequired: ['32-bit', '64-bit'],
+            marketDemand: 5000000
+        },
+        {
+            id: 'core2duo',
+            name: 'Core 2 Duo',
+            bits: 64,
+            cores: 2,
+            ghz: 2.0,
+            cost: 500,
+            marketPrice: 3500,
+            year: 2006,
+            techRequired: ['64-bit', 'Multi-core'],
+            marketDemand: 10000000
+        },
+        {
+            id: 'i7',
+            name: 'Intel Core i7',
+            bits: 64,
+            cores: 4,
+            ghz: 3.2,
+            cost: 700,
+            marketPrice: 5000,
+            year: 2008,
+            techRequired: ['64-bit', 'Multi-core'],
+            marketDemand: 15000000
+        },
+        {
+            id: 'i9',
+            name: 'Intel Core i9',
+            bits: 64,
+            cores: 8,
+            ghz: 4.5,
+            cost: 1000,
+            marketPrice: 8000,
+            year: 2017,
+            techRequired: ['64-bit', 'Multi-core', 'AI Acceleration'],
+            marketDemand: 20000000
         }
     ],
     
@@ -87,6 +171,9 @@ const GameState = {
     // Events Log
     eventLog: [],
     
+    // Initialization flag
+    isInitialized: false,
+    
     // Save/Load
     save: function() {
         localStorage.setItem('cpuTycoonSave', JSON.stringify(this));
@@ -95,7 +182,13 @@ const GameState = {
     load: function() {
         const saved = localStorage.getItem('cpuTycoonSave');
         if (saved) {
-            Object.assign(this, JSON.parse(saved));
+            const data = JSON.parse(saved);
+            // Restore all properties
+            Object.assign(this, data);
+            // Ensure cpuDesigns array is properly restored
+            if (!Array.isArray(this.cpuDesigns)) {
+                this.cpuDesigns = data.cpuDesigns || [];
+            }
             return true;
         }
         return false;
@@ -109,11 +202,17 @@ const GameState = {
         this.cpuInventory = {};
         this.productionQueue = [];
         this.eventLog = [];
-        this.technologies = Object.keys(this.technologies).reduce((acc, tech) => {
-            acc[tech] = { ...this.technologies[tech] };
-            if (tech !== '8-bit') acc[tech].researched = false;
-            return acc;
-        }, {});
+        this.isInitialized = false;
+        
+        // Reset technologies but keep 8-bit researched
+        const techKeys = Object.keys(this.technologies);
+        techKeys.forEach(tech => {
+            if (tech !== '8-bit') {
+                this.technologies[tech].researched = false;
+            } else {
+                this.technologies[tech].researched = true;
+            }
+        });
     },
     
     addEvent: function(eventText) {
@@ -122,14 +221,18 @@ const GameState = {
             text: eventText,
             timestamp: Date.now()
         });
-        // Keep only last 20 events
-        if (this.eventLog.length > 20) {
+        // Keep only last 50 events
+        if (this.eventLog.length > 50) {
             this.eventLog.shift();
         }
+    },
+    
+    // Ensure CPU designs aren't duplicated
+    getAvailableCPUs: function() {
+        return this.cpuDesigns.filter(cpu => this.year >= cpu.year);
     }
 };
 
-// Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = GameState;
 }
